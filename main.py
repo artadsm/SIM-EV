@@ -21,9 +21,9 @@ def simulateCharging(ev,cu,startTime,endTime,connectionTime, disconnectionTime,i
             lastStep = int(((disconnectionTime - connectionTime).total_seconds())/(interval.total_seconds()))
 
             while time < disconnectionTime:
-                if min(ev.maxPower,cu.maxPower)*((interval.total_seconds())/3600)*(i+2)+(initialSoc/100)*ev.batteryCapacity > ev.batteryCapacity or i >= lastStep-2: 
-                    chargingPower = min(ev.maxPower,cu.maxPower)*((disconnectionTime - time).total_seconds())/((disconnectionTime - connectionTime).total_seconds())
-                if abs(100 - ev.stateOfCharge) < 0.1 or ev.stateOfCharge == 100:
+                if min(ev.maxPower,cu.maxPower)*((interval.total_seconds())/3600)*(i+2)+(initialSoc/100)*ev.batteryCapacity > ev.batteryCapacity or i >= lastStep-2: #Checking if the constant power will overcharge the battery in the next steps
+                    chargingPower = min(ev.maxPower,cu.maxPower)*((disconnectionTime - time).total_seconds())/((disconnectionTime - connectionTime).total_seconds()) # Linear decrasing 
+                if abs(100 - ev.stateOfCharge) < 0.1 or ev.stateOfCharge == 100: #Considering a 0.1 tolerance for discrete approach
                     chargingPower = 0
                 energyCharged = chargingPower*(interval.total_seconds()/3600)
                 ev.stateOfCharge += (energyCharged/ev.batteryCapacity)*100
@@ -42,30 +42,28 @@ def simulateCharging(ev,cu,startTime,endTime,connectionTime, disconnectionTime,i
 
 startTime = datetime.strptime("09:00", "%H:%M")
 endTime = datetime.strptime("21:00", "%H:%M")
-connectionTime = input()
-disconnectionTime = input()
+connectionTime = input("Connection Time: ")
+disconnectionTime = input("Disconnection Time: ")
 connectionTime = datetime.strptime(connectionTime, "%H:%M")
 disconnectionTime = datetime.strptime(disconnectionTime, "%H:%M")
-
-
 interval = timedelta(minutes=15)
+
 ev = ElectricVehicle.EletricVehicle()
 cu = ChargingUnit.ChargingUnit()
 
-df = simulateCharging(ev,cu,startTime,endTime,connectionTime,disconnectionTime,interval)
-
-
+#Setting path for data exports 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 output_dir = os.path.join(base_dir, "Exports")
 json_path = os.path.join(output_dir, "charging_data.json")
 xlsx_path = os.path.join(output_dir, "charging_data.xlsx")
 png_path = os.path.join(output_dir, "soc_plot.png")
 
+#Running Simulation
+df = simulateCharging(ev,cu,startTime,endTime,connectionTime,disconnectionTime,interval)
+
+#Results
 df.to_json(json_path, orient="records")
 df.to_excel(xlsx_path,index=False)
-
-
-
 plt.figure(figsize=(10, 5))
 plt.plot(df["Timestamp"], df["SOC (%)"], marker='o', linestyle='-')
 plt.xlabel("Time")
