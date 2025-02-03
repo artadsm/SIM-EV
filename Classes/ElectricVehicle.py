@@ -1,5 +1,5 @@
 class EletricVehicle():
-    def __init__(self,maxPower = 11,batteryCapacity = 40,stateOfCharge = 10,connectionStatus = False):
+    def __init__(self,maxPower = 11,batteryCapacity = 80,stateOfCharge = 10,connectionStatus = False):
         self.maxPower = maxPower
         self.batteryCapacity = batteryCapacity
         self.stateOfCharge = stateOfCharge
