@@ -4,7 +4,7 @@ Simulation of an EV charging scenario in a Python-based environment
 For the environment setup, install the dependencies on requirements.txt.
  
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 
