@@ -17,8 +17,11 @@ def simulateCharging(ev,cu,startTime,endTime,connectionTime, disconnectionTime,i
             ev.connectionStatus = True
             cu.connectionStatus = True
             chargingPower = min(ev.maxPower,cu.maxPower)
+
+            lastStep = int(((disconnectionTime - connectionTime).total_seconds())/(interval.total_seconds()))
+
             while time < disconnectionTime:
-                if min(ev.maxPower,cu.maxPower)*((interval.total_seconds())/3600)*(i+2)+(initialSoc/100)*ev.batteryCapacity > ev.batteryCapacity: 
+                if min(ev.maxPower,cu.maxPower)*((interval.total_seconds())/3600)*(i+2)+(initialSoc/100)*ev.batteryCapacity > ev.batteryCapacity or i >= lastStep-2: 
                     chargingPower = min(ev.maxPower,cu.maxPower)*((disconnectionTime - time).total_seconds())/((disconnectionTime - connectionTime).total_seconds())
                 if abs(100 - ev.stateOfCharge) < 0.1 or ev.stateOfCharge == 100:
                     chargingPower = 0
@@ -69,7 +72,7 @@ plt.xlabel("Time")
 plt.ylabel("SOC (%)")
 plt.title("SOC Trajectory")
 plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-plt.xticks(rotation=45) #Better visualization 
+plt.xticks(rotation=45) 
 plt.grid()
 plt.savefig(png_path)
 plt.show()
