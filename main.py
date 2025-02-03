@@ -7,22 +7,30 @@ import os
 
 def simulateCharging(ev,cu,startTime,endTime,connectionTime, disconnectionTime,interval):
     time = startTime
-    chargingPower = min(ev.maxPower,cu.maxPower)
+    chargingPower = 0
     energyCharged = 0
-    data = [[time,chargingPower,ev.stateOfCharge,energyCharged]]
+    initialSoc = ev.stateOfCharge
     i = 0
+    data = [[time,chargingPower,ev.stateOfCharge,energyCharged]]
     while time < endTime:
         if time >= connectionTime and time <= disconnectionTime:
+            ev.connectionStatus = True
+            cu.connectionStatus = True
+            chargingPower = min(ev.maxPower,cu.maxPower)
             while time < disconnectionTime:
-                if chargingPower*(interval.total_seconds()/3600)*(i+3) > ev.batteryCapacity:
-                    chargingPower = (100 - ev.stateOfCharge)*ev.batteryCapacity/(interval.total_seconds()/36)
-                elif ev.stateOfCharge >= 100:
+                if min(ev.maxPower,cu.maxPower)*((interval.total_seconds())/3600)*(i+2)+(initialSoc/100)*ev.batteryCapacity > ev.batteryCapacity: 
+                    chargingPower = min(ev.maxPower,cu.maxPower)*((disconnectionTime - time).total_seconds())/((disconnectionTime - connectionTime).total_seconds())
+                if abs(100 - ev.stateOfCharge) < 0.1 or ev.stateOfCharge == 100:
                     chargingPower = 0
                 energyCharged = chargingPower*(interval.total_seconds()/3600)
                 ev.stateOfCharge += (energyCharged/ev.batteryCapacity)*100
+                ev.stateOfCharge = min(ev.stateOfCharge,100)
                 time += interval
+                i += 1
                 data.append([time,chargingPower,ev.stateOfCharge,energyCharged])
-                i += 1 
+        chargingPower = 0
+        ev.connectionStatus = False
+        cu.connectionStatus = False 
         time+=interval
         data.append([time,chargingPower,ev.stateOfCharge,energyCharged])
     return pd.DataFrame(data, columns=["Timestamp", "Charging Power (kW)", "SOC (%)", "Net Energy Charged (kWh)"])
