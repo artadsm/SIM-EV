@@ -2,12 +2,11 @@
 Simulation of an EV charging scenario in a Python-based environment
 
 For the environment setup, install the dependencies on requirements.txt.
+ 
+```
+pip install -r requirements.txt
+```
 
-Consider running 
-```
-SET PYTHONPATH = '{insert the path to Classes directory}'
-```
-if there is any problem while importing the classes into the main application.
 
 # EV battery charging load curve
 
